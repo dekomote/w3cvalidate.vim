@@ -5,6 +5,10 @@ W3cValidate.vim is a plugin that enables buffer/url validation using the http://
 Copy w3cvalidate.vim file inside plugin directory, source it or restart Vim. Use :W3cValidate to validate
 the current buffer, or :W3cValidate "[url_here]" to validate a hosted page.
 
+The validator service url can be changed if you run an instance of it localy by setting  g:w3_validator_url  in .vimrc
+
+The script has API timeout default to 20 seconds. You can change it by setting  g:w3_apicall_timeout  in .vimrc
+
 == TODO ==
 
 Parsing the explanation messages for more verbose output.

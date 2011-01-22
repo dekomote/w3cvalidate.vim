@@ -3,15 +3,22 @@ if !has('python')
     finish
 endif
 
+if !exists("g:w3_validator_url")
+    let g:w3_validator_url = "http://validator.w3.org/check"
+endif
+
+if !exists("g:w3_apicall_timeout")
+    let g:w3_apicall_timeout = 20
+endif
 
 function! s:W3cValidate(...)
 python << EOF
-import vim, urllib2, urllib, simplejson
+import vim, urllib2, urllib, simplejson, re
 
 OUTPUT = 'json'
 VERBOSE = 0
-TIMEOUT = 20
-URL = 'http://validator.w3.org/check'
+TIMEOUT = int(vim.eval("g:w3_apicall_timeout"))
+URL = vim.eval("g:w3_validator_url")
 
 
 fragment = ''.join(vim.current.buffer)
@@ -30,7 +37,7 @@ else:
 try:
     response = urllib2.urlopen(URL, post_dat, TIMEOUT).read()
     messages = simplejson.loads(response).get("messages", [])
-
+    
     vim.command("call s:W3ScratchBufferOpen()")
     del vim.current.buffer[:]
     
