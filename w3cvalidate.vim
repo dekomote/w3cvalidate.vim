@@ -3,25 +3,6 @@ if !has('python')
     finish
 endif
 
-let W3ScratchBufferName = "W3ScratchBuffer__"
-
-function! s:W3ScratchBufferOpen()
-    
-    let scr_bufnum = bufnr(g:W3ScratchBufferName)
-    if scr_bufnum == -1
-        exe "new " . g:W3ScratchBufferName
-    else
-        let scr_winnum = bufwinnr(scr_bufnum)
-        if scr_winnum != -1
-            if winnr() != scr_winnum
-                exe scr_winnum . "wincmd w"
-            endif
-        else
-            exe "split +buffer" . scr_bufnum
-        endif
-    endif
-endfunction
-
 
 function! s:W3cValidate(...)
 python << EOF
@@ -77,6 +58,27 @@ except:
 
 EOF
 endfunction
+
+
+let W3ScratchBufferName = "W3ScratchBuffer__"
+
+function! s:W3ScratchBufferOpen()
+    
+    let scr_bufnum = bufnr(g:W3ScratchBufferName)
+    if scr_bufnum == -1
+        exe "new " . g:W3ScratchBufferName
+    else
+        let scr_winnum = bufwinnr(scr_bufnum)
+        if scr_winnum != -1
+            if winnr() != scr_winnum
+                exe scr_winnum . "wincmd w"
+            endif
+        else
+            exe "split +buffer" . scr_bufnum
+        endif
+    endif
+endfunction
+
 
 function! s:W3ScratchBuffer()
     setlocal buftype=nofile
