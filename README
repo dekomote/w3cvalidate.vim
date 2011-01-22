@@ -1,0 +1,18 @@
+W3cValidate.vim is a plugin that enables buffer/url validation using the http://validator.w3.org api
+
+== USAGE ==
+
+Copy w3cvalidate.vim file inside plugin directory, source it or restart Vim. Use :W3cValidate to validate
+the current buffer, or :W3cValidate "[url_here]" to validate a hosted page.
+
+== TODO ==
+
+Parsing the explanation messages for more verbose output.
+
+Adding more options for doctype switch etc.
+
+== NOTES ==
+
+Needs vim compiled with +python option. Works out of the box on Ubuntu and Ubuntu-derivates.
+
+Thanks to Yegappan Lakshmanan for Scratch.vim http://www.vim.org/scripts/script.php?script_id=664, I got some ideas for the temporary buffer displaying the errors/warnings from this script.
