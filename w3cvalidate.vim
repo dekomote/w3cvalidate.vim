@@ -1,3 +1,26 @@
+"=============================================================================
+" File: w3cvalidate.vim
+" Author: Dejan Noveski <dr.mote@gmail.com>
+" Last Change: 23-Jan-2010.
+" Version: 0.3
+" WebPage: http://github.com/dekomote/w3cvalidate.vim
+" Description: vim plugins for W3C validation of buffer/url
+" Usage:
+"   :W3cValidate - validates the buffer
+"   :W3cValidate [url] - validates an URL
+"   :W3cValidateDT [doctype] - validates the buffer using [doctype] override
+"
+" Tips:
+"   Set g:w3_validator_url if you run a local instance of the w3 validator
+"   Set g:w3_apicall_timeout to change the timeout of the api calls
+"
+"
+"   You can set language attribute in html using 'zen_settings.lang'.
+"
+" GetLatestVimScripts: 3416 1 :AutoInstall: w3cvalidate.vim
+" script type: plugin
+
+
 if !has('python')
     echo "Error: Required vim compiled with +python"
     finish
@@ -11,6 +34,10 @@ if !exists("g:w3_apicall_timeout")
     let g:w3_apicall_timeout = 20
 endif
 
+if !exists("g:w3_doctype_override")
+    let g:w3_doctype_override="Inline"
+endif
+
 function! s:W3cValidate(...)
 python << EOF
 import vim, urllib2, urllib, simplejson, re
@@ -19,11 +46,11 @@ OUTPUT = 'json'
 VERBOSE = 0
 TIMEOUT = int(vim.eval("g:w3_apicall_timeout"))
 URL = vim.eval("g:w3_validator_url")
-
+DOCTYPE = vim.eval("g:w3_doctype_override")
 
 fragment = ''.join(vim.current.buffer)
 
-post_dat = {"output": OUTPUT, "verbose": VERBOSE}
+post_dat = {"output": OUTPUT, "verbose": VERBOSE, "doctype": DOCTYPE}
 
 if int(vim.eval("a:0")) > 0:
     url_check = vim.eval("a:1")
@@ -36,7 +63,8 @@ else:
 
 try:
     response = urllib2.urlopen(URL, post_dat, TIMEOUT).read()
-    messages = simplejson.loads(response).get("messages", [])
+    json_response = simplejson.loads(response)
+    messages = json_response.get("messages", [])
     
     vim.command("call s:W3ScratchBufferOpen()")
     del vim.current.buffer[:]
@@ -45,12 +73,21 @@ try:
 
     valid = True 
     for message in messages:
+        explanation = str(message.get("explanation", "")).replace("\n"," ")
+        explanation = explanation.replace("&#x2709;", "")
+        explanation = re.sub(r"\s+", " ", explanation)
+        explanation = re.sub(r"<(.[^<])*>","", explanation)
+        explanation = re.sub(r"^\s+", "", explanation)
+        explanation = explanation.replace("&lt;", "<")
+        explanation = explanation.replace("&gt;", ">")
+
         if message["type"] == "error":
             valid = False
         vim.current.buffer.append("Type: %s | Line: %s | Column: %s" %
                     (str.capitalize(message["type"]), message["lastLine"],
                     message["lastColumn"],))
         vim.current.buffer.append(str.capitalize(message["message"]))
+        vim.current.buffer.append(explanation)
         vim.current.buffer.append("")
 
     if valid:
@@ -66,6 +103,11 @@ except:
 EOF
 endfunction
 
+function! s:W3cValidateDT(doctype)
+    let g:w3_doctype_override = a:doctype
+    call s:W3cValidate()
+    let g:w3_doctype_override = "Inline"
+endfunction
 
 let W3ScratchBufferName = "W3ScratchBuffer__"
 
@@ -98,3 +140,4 @@ endfunction
 autocmd BufNewFile W3ScratchBuffer__ call s:W3ScratchBuffer()
 
 command! -nargs=? W3cValidate call s:W3cValidate(<args>)
+command! -nargs=1 W3cValidateDT call s:W3cValidateDT(<args>)
