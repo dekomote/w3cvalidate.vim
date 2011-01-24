@@ -40,7 +40,11 @@ endif
 
 function! s:W3cValidate(...)
 python << EOF
-import vim, urllib2, urllib, simplejson, re
+import vim, urllib2, urllib, re
+try:
+    import simplejson as json
+except ImportError:
+    import json
 
 OUTPUT = 'json'
 VERBOSE = 0
@@ -63,7 +67,7 @@ else:
 
 try:
     response = urllib2.urlopen(URL, post_dat, TIMEOUT).read()
-    json_response = simplejson.loads(response)
+    json_response = json.loads(response)
     messages = json_response.get("messages", [])
     
     vim.command("call s:W3ScratchBufferOpen()")
